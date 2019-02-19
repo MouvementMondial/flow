@@ -14,11 +14,15 @@ from flow.envs.loop.wave_attenuation import WaveAttenuationEnv, \
 from flow.envs.merge import WaveAttenuationMergePOEnv
 from flow.envs.test import TestEnv
 
+from flow.envs.loop.lane_changing_speed import LaneChangeAccelEnv_speed
+from flow.envs.loop.lane_changing_speed import LaneChangeAccelPOEnv_speed
+from flow.envs.intersection_env import IntersectionEnv
+
 __all__ = [
     'Env', 'AccelEnv', 'LaneChangeAccelEnv',
-    'LaneChangeAccelPOEnv', 'GreenWaveTestEnv', 'GreenWaveTestEnv',
+    'LaneChangeAccelPOEnv',"LaneChangeAccelEnv_speed", 'GreenWaveTestEnv', 'GreenWaveTestEnv',
     'WaveAttenuationMergePOEnv', 'TwoLoopsMergePOEnv', 'BottleneckEnv',
     'BottleNeckAccelEnv', 'WaveAttenuationEnv', 'WaveAttenuationPOEnv',
     'TrafficLightGridEnv', 'PO_TrafficLightGridEnv', 'DesiredVelocityEnv',
-    'TestEnv', 'BayBridgeEnv',
+    'TestEnv', 'BayBridgeEnv',"IntersectionEnv"
 ]

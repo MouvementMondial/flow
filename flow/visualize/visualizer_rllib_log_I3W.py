@@ -19,6 +19,8 @@ import numpy as np
 import os
 import sys
 
+import csv
+
 import ray
 try:
     from ray.rllib.agents.agent import get_agent_class
@@ -71,8 +73,14 @@ def visualizer_rllib(args):
     # TODO(ev) remove eventually
     sim_params = flow_params['sim']
     setattr(sim_params, 'num_clients', 1)
-
     
+    print(flow_params['sim'].render)
+    print("testtesttest")
+
+    # Create and register a gym+rllib env
+    #create_env, env_name = make_create_env(
+    #    params=flow_params, version=0, render=False)
+    #register_env(env_name, create_env)
 
     # Determine agent and checkpoint
     config_run = config['env_config']['run'] if 'run' in config['env_config'] \
@@ -114,11 +122,12 @@ def visualizer_rllib(args):
         sim_params.render = 'drgb'
         sim_params.pxpm = 4
         sim_params.save_render = True
-
-    # Create and register a gym+rllib env
+        
+    # Create and register a gym+rllib env    
     create_env, env_name = make_create_env(
         params=flow_params, version=0)
     register_env(env_name, create_env)
+    
 
     # Recreate the scenario from the pickled parameters
     exp_tag = flow_params['exp_tag']
@@ -162,7 +171,7 @@ def visualizer_rllib(args):
     checkpoint = checkpoint + '/checkpoint-' + args.checkpoint_num
     agent.restore(checkpoint)
 
-    if hasattr(agent, "local_evaluator"): # and os.environ["TEST_FLAG"] != 'True':
+    if hasattr(agent, "local_evaluator"):# and os.environ["TEST_FLAG"] != 'True':
         env = agent.local_evaluator.env
     else:
         env = gym.make(env_name)
@@ -197,7 +206,20 @@ def visualizer_rllib(args):
 
     final_outflows = []
     mean_speed = []
+    rets = []
     for i in range(args.num_rollouts):
+        
+        # initialize log values
+        veh_name_1 = "rl_0"
+        veh_name_2 = "rl_1"
+        veh_speed_1 = []
+        veh_speed_2 = []
+        veh_pos_1 = []
+        veh_pos_2 = []
+        action_acc_1 = []
+        action_acc_2 = []
+        curr_reward = [] 
+
         vel = []
         state = env.reset()
         if multiagent:
@@ -226,6 +248,16 @@ def visualizer_rllib(args):
                     ret[policy_map_fn(actor)][0] += rew
             else:
                 ret += reward
+            
+            # append log values
+            action_acc_1.append(action[0])
+            action_acc_2.append(action[1])
+            veh_speed_1.append(vehicles.get_speed(veh_name_1))
+            veh_speed_2.append(vehicles.get_speed(veh_name_2))
+            veh_pos_1.append(vehicles.get_position(veh_name_1))
+            veh_pos_2.append(vehicles.get_position(veh_name_2))
+            curr_reward.append(reward)
+
             if multiagent and done['__all__']:
                 break
             if not multiagent and done:
@@ -236,6 +268,7 @@ def visualizer_rllib(args):
                 rets[key].append(ret[key])
         else:
             rets.append(ret)
+        rets.append(ret)
         outflow = vehicles.get_outflow_rate(500)
         final_outflows.append(outflow)
         mean_speed.append(np.mean(vel))
@@ -245,6 +278,15 @@ def visualizer_rllib(args):
                     i, ret, agent_id))
         else:
             print('Round {}, Return: {}'.format(i, ret))
+    
+    # write log file
+        logfileRows = zip(action_acc_1,action_acc_2,veh_speed_1,veh_speed_2,veh_pos_1,veh_pos_2,curr_reward)
+        with open(result_dir+"/test_time_rollout/log_"+str(i)+".csv","w") as f:
+            writer = csv.writer(f)
+            writer.writerow(["action_acc_1", "action_acc_2", "veh_speed_1", "veh_speed_2", "veh_pos_1", "veh_pos_2", "curr_reward"])
+            for row in logfileRows:
+                writer.writerow(row)
+
     if multiagent:
         for agent_id, rew in rets.items():
             print('Average, std return: {}, {} for agent {}'.format(
