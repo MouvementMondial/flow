@@ -58,12 +58,18 @@ def visualizer_rllib(args):
 
     # check if we have a multiagent scenario but in a
     # backwards compatible way
+    """
     if config.get('multiagent', {}).get('policy_graphs', {}):
+        print("MultiAgent")
         multiagent = True
         config['multiagent'] = pkl['multiagent']
     else:
+        print("SingleAgent")
         multiagent = False
-
+    """
+    multiagent = True
+    config['multiagent'] = pkl['multiagent']
+    
     # Run on only one cpu for rendering purposes
     config['num_workers'] = 0
 
@@ -75,7 +81,6 @@ def visualizer_rllib(args):
     setattr(sim_params, 'num_clients', 1)
     
     print(flow_params['sim'].render)
-    print("testtesttest")
 
     # Create and register a gym+rllib env
     #create_env, env_name = make_create_env(
@@ -106,6 +111,8 @@ def visualizer_rllib(args):
 
     sim_params.restart_instance = False
     sim_params.emission_path = './test_time_rollout/'
+    if not os.path.exists(result_dir+"/results_run_"+args.checkpoint_num):
+        os.mkdir(result_dir+"/results_run_"+args.checkpoint_num)
 
     # pick your rendering mode
     if args.render_mode == 'sumo_web3d':
@@ -145,13 +152,13 @@ def visualizer_rllib(args):
 
     # check if the environment is a single or multiagent environment, and
     # get the right address accordingly
-    # single_agent_envs = [env for env in dir(flow.envs)
-    #                      if not env.startswith('__')]
+    #single_agent_envs = [env for env in dir(flow.envs)
+    #                     if not env.startswith('__')]
 
-    # if flow_params['env_name'] in single_agent_envs:
-    #     env_loc = 'flow.envs'
-    # else:
-    #     env_loc = 'flow.multiagent_envs'
+    #if flow_params['env_name'] in single_agent_envs:
+    #    env_loc = 'flow.envs'
+    #else:
+    #    env_loc = 'flow.multiagent_envs'
 
     # Start the environment with the gui turned on and a path for the
     # emission file
@@ -178,10 +185,14 @@ def visualizer_rllib(args):
 
     if multiagent:
         rets = {}
-        # map the agent id to its policy
+        ## map the agent id to its policy
         policy_map_fn = config['multiagent']['policy_mapping_fn'].func
-        for key in config['multiagent']['policy_graphs'].keys():
-            rets[key] = []
+        print("Policymap Function:")
+        print(policy_map_fn)
+        #for key in config['multiagent']['policy_graphs'].keys():
+        #    rets[key] = []
+        rets['rl_0'] = []
+        rets['rl_1'] = []
     else:
         rets = []
 
@@ -206,7 +217,7 @@ def visualizer_rllib(args):
 
     final_outflows = []
     mean_speed = []
-    rets = []
+    #rets = []
     for i in range(args.num_rollouts):
         
         # initialize log values
@@ -218,12 +229,14 @@ def visualizer_rllib(args):
         veh_pos_2 = []
         action_acc_1 = []
         action_acc_2 = []
-        curr_reward = [] 
+        curr_reward_1 = []
+        curr_reward_2 = [] 
 
         vel = []
         state = env.reset()
         if multiagent:
-            ret = {key: [0] for key in rets.keys()}
+            #ret = {key: [0] for key in rets.keys()}
+            ret = {'rl_0': [0], 'rl_1': [0]}
         else:
             ret = 0
         for _ in range(env_params.horizon):
@@ -240,23 +253,30 @@ def visualizer_rllib(args):
                     else:
                         action[agent_id] = agent.compute_action(
                             state[agent_id], policy_id=policy_map_fn(agent_id))
+                        print("Agent ID:")
+                        print(agent_id)
+                        print("Policy ID:")
+                        print(policy_map_fn(agent_id))
             else:
                 action = agent.compute_action(state)
             state, reward, done, _ = env.step(action)
             if multiagent:
+                #ret['rl_0']+=reward['rl_0']
+                #ret['rl_1']+=reward['rl_1']
                 for actor, rew in reward.items():
                     ret[policy_map_fn(actor)][0] += rew
             else:
                 ret += reward
             
             # append log values
-            action_acc_1.append(action[0])
-            action_acc_2.append(action[1])
+            action_acc_1.append(action['rl_0'][0])
+            action_acc_2.append(action['rl_1'][0])
             veh_speed_1.append(vehicles.get_speed(veh_name_1))
             veh_speed_2.append(vehicles.get_speed(veh_name_2))
             veh_pos_1.append(vehicles.get_x_by_id(veh_name_1))
             veh_pos_2.append(vehicles.get_x_by_id(veh_name_2))
-            curr_reward.append(reward)
+            curr_reward_1.append(reward['rl_0'])
+            curr_reward_2.append(reward['rl_1'])
 
             if multiagent and done['__all__']:
                 break
@@ -264,11 +284,13 @@ def visualizer_rllib(args):
                 break
 
         if multiagent:
-            for key in rets.keys():
-                rets[key].append(ret[key])
+            #for key in rets.keys():
+                #rets[key].append(ret[key])
+            rets['rl_0'].append(ret['rl_0'][0])
+            rets['rl_1'].append(ret['rl_1'][0])
         else:
             rets.append(ret)
-        rets.append(ret)
+  
         outflow = vehicles.get_outflow_rate(500)
         final_outflows.append(outflow)
         mean_speed.append(np.mean(vel))
@@ -280,10 +302,10 @@ def visualizer_rllib(args):
             print('Round {}, Return: {}'.format(i, ret))
     
     # write log file
-        logfileRows = zip(action_acc_1,action_acc_2,veh_speed_1,veh_speed_2,veh_pos_1,veh_pos_2,curr_reward)
-        with open(result_dir+"/test_time_rollout/log_"+str(i)+".csv","w") as f:
+        logfileRows = zip(action_acc_1,action_acc_2,veh_speed_1,veh_speed_2,veh_pos_1,veh_pos_2,curr_reward_1,curr_reward_2)
+        with open(result_dir+"/results_run_"+args.checkpoint_num+"/log_"+str(i)+".csv","w") as f:
             writer = csv.writer(f)
-            writer.writerow(["action_acc_1", "action_acc_2", "veh_speed_1", "veh_speed_2", "veh_pos_1", "veh_pos_2", "curr_reward"])
+            writer.writerow(["action_acc_1", "action_acc_2", "veh_speed_1", "veh_speed_2", "veh_pos_1", "veh_pos_2", "curr_reward_1", "curr_reward_2"])
             for row in logfileRows:
                 writer.writerow(row)
 
@@ -344,7 +366,7 @@ def create_parser():
     parser.add_argument(
         '--run',
         type=str,
-        help='The algorithm or model to train. This may refer to '
+        help='The ahttps://www.turkishairlines.com/en-de/flights/booking/availability-multicity/?cId=47ee08e4-7ad1-4c24-a8bf-73964605f957lgorithm or model to train. This may refer to '
              'the name of a built-on algorithm (e.g. RLLib\'s DQN '
              'or PPO), or a user-defined trainable function or '
              'class registered in the tune registry. '

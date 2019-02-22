@@ -175,13 +175,10 @@ class IntersectionEnv(Env):
             self.k.vehicle.update(reset=False)
 
             nrOfVeh_t_plus_1 = len(self.k.vehicle.get_ids())
-            #print(self.step_counter)
-            #print('t:')
-            #print(nrOfVeh_t)
-            #print('t+1:')
-            #print(nrOfVeh_t_plus_1)
+            crash_nr=False
+            crash=False
             if nrOfVeh_t_plus_1 < nrOfVeh_t:
-                crash = True
+                crash_nr = True
                 print("Crash anzahl")
                 break
                 
@@ -195,7 +192,6 @@ class IntersectionEnv(Env):
             # crash encodes whether the simulator experienced a collision
             crash = self.k.simulation.check_collision()
             
-
             # stop collecting new simulation steps if there is a collision
             if crash:
                 print("crash collision")
@@ -205,13 +201,19 @@ class IntersectionEnv(Env):
             self.render()
 
         # test if the agent should terminate due to a crash
-        done = crash
+        if crash or crash_nr:
+            done = True
+        else:
+            done = False
 
         # compute the info for each agent
         infos = {}
         
-        if crash:
-            reward = 0
+        if done:
+            if crash:
+                reward = -100
+            else:
+                reward = 0
             next_observation = np.zeros(4)
             return next_observation, reward, done, infos
 

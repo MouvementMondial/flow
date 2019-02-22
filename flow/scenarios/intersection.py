@@ -235,7 +235,7 @@ class IntersectionTWScenario(Scenario):
             "from": "right",
             "to": "intersection",
             "length": repr(l),
-            "priority": "78"
+            "priority": "79"
         }, {
             "id": "intersection_top",
             "type": "edgeType",
@@ -280,16 +280,16 @@ class IntersectionTWScenario(Scenario):
 
     def specify_intersection_edge_starts(self):
         intersection_edgestarts = \
-            [(":intersection_0",40),
-             (":intersection_1",40)]
-
+            [(":intersection_1",40),
+            (":intersection_0",40.01)]
+    
         return intersection_edgestarts
 
     def specify_internal_edge_starts(self):
         internal_edgestarts = \
-          [(":left_intersection",40),
-           (":right_intersection",40),
-           (":intersection_top",46.2)]
+          [(":left_intersection",0),
+           (":right_intersection",0),
+           (":intersection_top",0)]
 
         return internal_edgestarts
      
