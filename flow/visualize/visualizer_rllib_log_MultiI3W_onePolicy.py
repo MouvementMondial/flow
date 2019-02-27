@@ -255,10 +255,6 @@ def visualizer_rllib(args):
                         #    state[agent_id], policy_id=policy_map_fn(agent_id))
                         action[agent_id] = agent.compute_action(
                             state[agent_id], policy_id="rl_1")
-                        print("Agent ID:")
-                        print(agent_id)
-                        print("Policy ID:")
-                        print(policy_map_fn(agent_id))
             else:
                 action = agent.compute_action(state)
             state, reward, done, _ = env.step(action)
