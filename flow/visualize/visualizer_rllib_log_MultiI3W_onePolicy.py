@@ -244,17 +244,22 @@ def visualizer_rllib(args):
             vel.append(np.mean(vehicles.get_speed(vehicles.get_ids())))
             if multiagent:
                 action = {}
-                for agent_id in state.keys():
-                    if use_lstm:
-                        action[agent_id], state_init[agent_id], logits = \
-                            agent.compute_action(
-                            state[agent_id], state=state_init[agent_id],
-                            policy_id=policy_map_fn(agent_id))
-                    else:
-                        #action[agent_id] = agent.compute_action(
-                        #    state[agent_id], policy_id=policy_map_fn(agent_id))
-                        action[agent_id] = agent.compute_action(
-                            state[agent_id], policy_id="rl_1")
+                
+                #choose state and policy manually
+                action["rl_0"] = agent.compute_action(state["rl_0"], policy_id="rl_0")
+                action["rl_1"] = agent.compute_action(state["rl_1"], policy_id="rl_0")
+
+                #for agent_id in state.keys():
+                #    if use_lstm:
+                #        action[agent_id], state_init[agent_id], logits = \
+                #            agent.compute_action(
+                #            state[agent_id], state=state_init[agent_id],
+                #            policy_id=policy_map_fn(agent_id))
+                #    else:
+                #        #action[agent_id] = agent.compute_action(
+                #        #    state[agent_id], policy_id=policy_map_fn(agent_id))
+                #        action[agent_id] = agent.compute_action(
+                #            state[agent_id], policy_id="rl_0")
             else:
                 action = agent.compute_action(state)
             state, reward, done, _ = env.step(action)
@@ -364,7 +369,7 @@ def create_parser():
     parser.add_argument(
         '--run',
         type=str,
-        help='The ahttps://www.turkishairlines.com/en-de/flights/booking/availability-multicity/?cId=47ee08e4-7ad1-4c24-a8bf-73964605f957lgorithm or model to train. This may refer to '
+        help='The algorithm or model to train. This may refer to '
              'the name of a built-on algorithm (e.g. RLLib\'s DQN '
              'or PPO), or a user-defined trainable function or '
              'class registered in the tune registry. '

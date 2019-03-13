@@ -34,14 +34,26 @@ class MultiAgentIntersectionEnv(MultiEnv):
 		    
     def get_state(self):
 		#TODO: jeweils aufteilen in eigene Beobachtung und die des anderen
+        
+        speed_0 = [self.k.vehicle.get_speed("rl_0") / self.k.scenario.max_speed()]
+        speed_1 = [self.k.vehicle.get_speed("rl_1") / self.k.scenario.max_speed()]
+        pos_0   = [self.k.vehicle.get_x_by_id("rl_0") / self.k.scenario.length()]
+        pos_1   = [self.k.vehicle.get_x_by_id("rl_1") / self.k.scenario.length()]
+        
+        obs_0 = np.array(speed_0 + pos_0 + speed_1 + pos_1)
+        obs_1 = np.array(speed_1 + pos_1 + speed_0 + pos_0)
+
         obs = {}
-        for rl_id in self.k.vehicle.get_rl_ids():
-            speed = [self.k.vehicle.get_speed(veh_id) / self.k.scenario.max_speed()
-                 for veh_id in self.k.vehicle.get_ids()]
-            pos = [self.k.vehicle.get_x_by_id(veh_id) / self.k.scenario.length()
-                 for veh_id in self.k.vehicle.get_ids()]
-            observation = np.array(speed + pos)
-            obs.update({rl_id:observation})
+        obs.update({"rl_0":obs_0})
+        obs.update({"rl_1":obs_1})
+
+        #for rl_id in self.k.vehicle.get_rl_ids():
+        #    speed = [self.k.vehicle.get_speed(veh_id) / self.k.scenario.max_speed()
+        #         for veh_id in self.k.vehicle.get_ids()]
+        #    pos = [self.k.vehicle.get_x_by_id(veh_id) / self.k.scenario.length()
+        #         for veh_id in self.k.vehicle.get_ids()]
+        #    observation = np.array(speed + pos)
+        #    obs.update({rl_id:observation})
         return obs
 		
     def _apply_rl_actions(self, rl_actions):
