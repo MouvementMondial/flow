@@ -33,20 +33,35 @@ class MultiAgentIntersectionEnv(MultiEnv):
             dtype=np.float32)
 		    
     def get_state(self):
-		#TODO: jeweils aufteilen in eigene Beobachtung und die des anderen
+		
+		# reward: v_selbst, p_selbst, v_anderer, p_anderer
+        #speed_0 = [self.k.vehicle.get_speed("rl_0") / self.k.scenario.max_speed()]
+        #speed_1 = [self.k.vehicle.get_speed("rl_1") / self.k.scenario.max_speed()]
+        #pos_0   = [self.k.vehicle.get_x_by_id("rl_0") / self.k.scenario.length()]
+        #pos_1   = [self.k.vehicle.get_x_by_id("rl_1") / self.k.scenario.length()]
         
-        speed_0 = [self.k.vehicle.get_speed("rl_0") / self.k.scenario.max_speed()]
-        speed_1 = [self.k.vehicle.get_speed("rl_1") / self.k.scenario.max_speed()]
-        pos_0   = [self.k.vehicle.get_x_by_id("rl_0") / self.k.scenario.length()]
-        pos_1   = [self.k.vehicle.get_x_by_id("rl_1") / self.k.scenario.length()]
+        #obs_0 = np.array(speed_0 + pos_0 + speed_1 + pos_1)
+        #obs_1 = np.array(speed_1 + pos_1 + speed_0 + pos_0)
+
+        # reward: v_selbst, v_anderer, abstand_zu_fzg, abstand_zu_kp
+        speed_0 = [ self.k.vehicle.get_speed("rl_0") / self.k.scenario.max_speed() ]
+        speed_1 = [ self.k.vehicle.get_speed("rl_1") / self.k.scenario.max_speed() ]
         
-        obs_0 = np.array(speed_0 + pos_0 + speed_1 + pos_1)
-        obs_1 = np.array(speed_1 + pos_1 + speed_0 + pos_0)
+        pos_0   = self.k.vehicle.get_x_by_id("rl_0")
+        pos_1   = self.k.vehicle.get_x_by_id("rl_1")
+        distance_kp_0 =   [ (40-pos_0)    *4 / self.k.scenario.length() ]
+        distance_kp_1 =   [ (40-pos_1)    *4 / self.k.scenario.length() ]
+        distance_0_to_1 = [ (pos_1-pos_0) *4 / self.k.scenario.length() ]
+        distance_1_to_0 = [ (pos_0-pos_1) *4 / self.k.scenario.length() ]
+
+        obs_0 = np.array(speed_0 + speed_1 + distance_kp_0 + distance_0_to_1)
+        obs_1 = np.array(speed_1 + speed_0 + distance_kp_1 + distance_1_to_0)
 
         obs = {}
         obs.update({"rl_0":obs_0})
         obs.update({"rl_1":obs_1})
 
+        # reward: v1,v2,p1,p2
         #for rl_id in self.k.vehicle.get_rl_ids():
         #    speed = [self.k.vehicle.get_speed(veh_id) / self.k.scenario.max_speed()
         #         for veh_id in self.k.vehicle.get_ids()]
@@ -67,12 +82,29 @@ class MultiAgentIntersectionEnv(MultiEnv):
             return {}
         #if kwargs['fail']:
         #    return 0
-        # reward: forward progress
+
+        rew = {}
+        rew["rl_0"] = 0
+        rew["rl_1"] = 0
+
+        # reward 1: forward progress
         rew = {}
         rew_rl_0 = self.k.vehicle.get_speed("rl_0")*0.1
         rew_rl_1 = self.k.vehicle.get_speed("rl_1")*0.1
         rew["rl_0"] = rew_rl_0
         rew["rl_1"] = rew_rl_1
+
+        # reward 2: first wins 
+        #rew = {}
+        #pos_0 = self.k.vehicle.get_x_by_id("rl_0")
+        #pos_1 = self.k.vehicle.get_x_by_id("rl_1")
+        #if pos_0 > pos_1:
+        #    rew["rl_0"] = 1
+        #    rew["rl_1"] = 0
+        #else:
+        #    rew["rl_0"] = 0
+        #    rew["rl_1"] = 1
+
         return rew
 
     def step(self, rl_actions):
@@ -108,6 +140,10 @@ class MultiAgentIntersectionEnv(MultiEnv):
         for _ in range(self.env_params.sims_per_step):
             self.time_counter += 1
             self.step_counter += 1
+
+            # safe old pos (teleportation / pos set to 0 if collision, timeout(?) or a car leaves the scenario
+            old_pos_0 = self.k.vehicle.get_x_by_id("rl_0")
+            old_pos_1 = self.k.vehicle.get_x_by_id("rl_1") 
 
             # perform acceleration actions for controlled human-driven vehicles
             if len(self.k.vehicle.get_controlled_ids()) > 0:
@@ -195,13 +231,30 @@ class MultiAgentIntersectionEnv(MultiEnv):
             states["rl_0"] = observation
             states["rl_1"] = observation
             infos = {key: {} for key in states.keys()}
+       
+            #reward when episode finished
             reward = {}
+            rew_0 = 0
+            rew_1 = 0
+            
+            #if old_pos_0 > old_pos_1:
+            #    rew_0 += 300
+            #    rew_1 += 0
+            #else:
+            #    rew_0 += 0
+            #    rew_1 += 300
+
+            # reward if crash, no reward if one vehicle leaves the scenario
             if crash:	
-                reward["rl_0"] = -100
-                reward["rl_1"] = -100
+                rew_0 += -100
+                rew_1 += -100
             else:
-                reward["rl_0"] = 0
-                reward["rl_1"] = 0
+                rew_0 += 0
+                rew_1 += 0
+            
+            reward["rl_0"] = rew_0
+            reward["rl_1"] = rew_1
+            
             clipped_actions = self.clip_actions(rl_actions)
             return states, reward, done, infos
             
@@ -234,6 +287,7 @@ class MultiAgentTeamSpiritIntersectionEnv(MultiEnv):
             dtype=np.float32)
 		    
     def get_state(self):
+		
 		#TODO: jeweils aufteilen in eigene Beobachtung und die des anderen
         obs = {}
         for rl_id in self.k.vehicle.get_rl_ids():
