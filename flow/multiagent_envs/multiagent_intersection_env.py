@@ -194,11 +194,11 @@ class MultiAgentIntersectionEnv(MultiEnv):
             self.k.simulation.simulation_step()
             
             # save screenshots
-            save_screenshots = False
+            save_screenshots = True
             if save_screenshots:	
                 if not os.path.exists("./screenshots"):
                     os.mkdir("./screenshots")
-                self.k.kernel_api.gui.screenshot("View #0","./screenshots/"+str(self.step_counter)+".png")
+                self.k.kernel_api.gui.screenshot("View #0","./screenshots/sumo_"+str(self.step_counter)+".png")
 
             self.k.vehicle.update(reset=False)
 
