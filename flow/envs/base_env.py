@@ -167,6 +167,11 @@ class Env(*classdef):
             raise ValueError('Mode %s is not supported!' %
                              self.sim_params.render)
         atexit.register(self.terminate)
+        
+        #self.teamspirit_0 = random.uniform(-1,1)
+        #self.teamspirit_1 = random.uniform(-1,1) 
+        self.teamspirit_0 = -0.25
+        self.teamspirit_1 = -1
 
     def restart_simulation(self, sim_params, render=None):
         """Restart an already initialized simulation instance.
@@ -204,6 +209,7 @@ class Env(*classdef):
         self.k.pass_api(kernel_api)
 
         self.setup_initial_state()
+      
 
     def setup_initial_state(self):
         """Store information on the initial state of vehicles in the network.
@@ -361,6 +367,10 @@ class Env(*classdef):
             the initial observation of the space. The initial reward is assumed
             to be zero.
         """
+        
+        #self.teamspirit_0 = random.uniform(-1,1)
+        #self.teamspirit_1 = random.uniform(-1,1) 
+        
         # reset the time counter
         self.time_counter = 0
 

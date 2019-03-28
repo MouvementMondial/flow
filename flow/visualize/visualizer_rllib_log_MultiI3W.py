@@ -362,7 +362,7 @@ def create_parser():
     parser.add_argument(
         '--run',
         type=str,
-        help='The ahttps://www.turkishairlines.com/en-de/flights/booking/availability-multicity/?cId=47ee08e4-7ad1-4c24-a8bf-73964605f957lgorithm or model to train. This may refer to '
+        help='The agorithm or model to train. This may refer to '
              'the name of a built-on algorithm (e.g. RLLib\'s DQN '
              'or PPO), or a user-defined trainable function or '
              'class registered in the tune registry. '
