@@ -146,8 +146,6 @@ class IntersectionTWScenario(Scenario):
     def gen_custom_start_pos(self, initial_config, num_vehicles, **kwargs):
         perturbation_1 = initial_config.perturbation * random.random() 
         perturbation_2 = initial_config.perturbation * random.random()
-        print(perturbation_1)
-        print(perturbation_2)
         startpositions = []
         startlanes = []
         startpositions.append(("top_intersection",0 + perturbation_1))

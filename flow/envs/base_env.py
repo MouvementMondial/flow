@@ -168,10 +168,10 @@ class Env(*classdef):
                              self.sim_params.render)
         atexit.register(self.terminate)
         
-        #self.teamspirit_0 = random.uniform(-1,1)
-        #self.teamspirit_1 = random.uniform(-1,1) 
-        self.teamspirit_0 = -0.25
-        self.teamspirit_1 = -1
+        self.teamspirit_0 = random.uniform(-1,1)
+        self.teamspirit_1 = random.uniform(-1,1) 
+        #self.teamspirit_0 = -0.25
+        #self.teamspirit_1 = -1
 
     def restart_simulation(self, sim_params, render=None):
         """Restart an already initialized simulation instance.
@@ -218,6 +218,14 @@ class Env(*classdef):
         information to the self.vehicles class and starts a subscription with
         sumo to collect state information each step.
         """
+        
+        self.teamspirit_0 = random.uniform(-1,1)
+        self.teamspirit_1 = random.uniform(-1,1)
+
+        print("New Teamspirit:")
+        print(self.teamspirit_0)
+        print(self.teamspirit_1)
+
         # determine whether to shuffle the vehicles
         if self.scenario.initial_config.shuffle:
             random.shuffle(self.initial_ids)
@@ -367,9 +375,6 @@ class Env(*classdef):
             the initial observation of the space. The initial reward is assumed
             to be zero.
         """
-        
-        #self.teamspirit_0 = random.uniform(-1,1)
-        #self.teamspirit_1 = random.uniform(-1,1) 
         
         # reset the time counter
         self.time_counter = 0

@@ -12,6 +12,12 @@ ADDITIONAL_ENV_PARAMS = {
     "max_decel": 3,
     # desired velocity for all vehicles in the network, in m/s
     "target_velocity": 10,
+    
+    # teamspirit
+    "ap_teamspirit_0": -1,
+    "ap_teamspirit_1": -1,
+    "ap_teamspirit_shuffle": False
+
 }
 
 class MultiAgentIntersectionEnv(MultiEnv):
@@ -1272,7 +1278,7 @@ class MultiAgentIntersectionEnv_baseline_3(MultiEnv):
         return states, reward, done, infos
 
 class MultiAgentIntersectionEnv_sharedPolicy_TeamSpirit(MultiEnv):
-    
+        
     @property
     def observation_space(self):
         return Box(
@@ -1311,8 +1317,20 @@ class MultiAgentIntersectionEnv_sharedPolicy_TeamSpirit(MultiEnv):
         distance_0_to_1 = [ (pos_1-pos_0) *4 / self.k.scenario.length() ]
         distance_1_to_0 = [ (pos_0-pos_1) *4 / self.k.scenario.length() ]
 
-        obs_0 = np.array(speed_0 + speed_1 + distance_kp_0 + distance_0_to_1 + [self.teamspirit_0])
-        obs_1 = np.array(speed_1 + speed_0 + distance_kp_1 + distance_1_to_0 + [self.teamspirit_1])
+        team_0 = 0
+        team_1 = 0
+        if self.env_params.additional_params['ap_teamspirit_shuffle']:
+            team_0 = self.teamspirit_0
+            team_1 = self.teamspirit_1
+        else:
+            team_0 = self.env_params.additional_params['ap_teamspirit_0']
+            team_1 = self.env_params.additional_params['ap_teamspirit_1']
+
+        #print(team_0)
+        #print(team_1) 
+
+        obs_0 = np.array(speed_0 + speed_1 + distance_kp_0 + distance_0_to_1 + [team_0])
+        obs_1 = np.array(speed_1 + speed_0 + distance_kp_1 + distance_1_to_0 + [team_1])
 
         obs = {}
         obs.update({"rl_0":obs_0})
@@ -1345,13 +1363,30 @@ class MultiAgentIntersectionEnv_sharedPolicy_TeamSpirit(MultiEnv):
         rew["rl_1"] = 0 
 
         # reward 1: forward progress
-        team_0 = (self.teamspirit_0+1)/2.0
-        team_1 = (self.teamspirit_1+1)/2.0
+        team_0 = 0
+        team_1 = 0
+        
+        #print(self.env_params.additional_params['teamspirit_shuffle'])
+        #print(self.env_params.additional_params['teamspirit_0'])
+        #print(self.env_params.additional_params['teamspirit_1'])
+        
+        if self.env_params.additional_params['ap_teamspirit_shuffle']:
+            team_0 = self.teamspirit_0
+            team_1 = self.teamspirit_1
+        else:
+            team_0 = self.env_params.additional_params['ap_teamspirit_0']
+            team_1 = self.env_params.additional_params['ap_teamspirit_1']
+        
+        #print(team_0)
+        #print(team_1)    
+            
+        team_0 = (team_0+1)/2.0
+        team_1 = (team_1+1)/2.0
         rew = {}
         rew_rl_0 = self.k.vehicle.get_speed("rl_0")*0.1
         rew_rl_1 = self.k.vehicle.get_speed("rl_1")*0.1
-        rew["rl_0"] = rew_rl_0 + rew_rl_0 * (1-team_0) + rew_rl_1 * team_0 
-        rew["rl_1"] = rew_rl_1 + rew_rl_1 * (1-team_1) + rew_rl_0 * team_1
+        rew["rl_0"] = rew_rl_0 + rew_rl_0 * (1-team_0) * 2 + rew_rl_1 * team_0 * 2 
+        rew["rl_1"] = rew_rl_1 + rew_rl_1 * (1-team_1) * 2 + rew_rl_0 * team_1 * 2
 
         # reward 2: first wins 
         #rew = {}
