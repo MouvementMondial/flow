@@ -1379,14 +1379,29 @@ class MultiAgentIntersectionEnv_sharedPolicy_TeamSpirit(MultiEnv):
         
         #print(team_0)
         #print(team_1)    
-            
+        
+        # teamspirit Faktor von -1_1 zurück auf 0_1 ziehen    
         team_0 = (team_0+1)/2.0
         team_1 = (team_1+1)/2.0
         rew = {}
         rew_rl_0 = self.k.vehicle.get_speed("rl_0")*0.1
         rew_rl_1 = self.k.vehicle.get_speed("rl_1")*0.1
-        rew["rl_0"] = rew_rl_0 + rew_rl_0 * (1-team_0) * 2 + rew_rl_1 * team_0 * 2 
-        rew["rl_1"] = rew_rl_1 + rew_rl_1 * (1-team_1) * 2 + rew_rl_0 * team_1 * 2
+        
+        # fix und 2*flexibel
+        #rew["rl_0"] = rew_rl_0 + rew_rl_0 * (1-team_0) * 2 + rew_rl_1 * team_0 * 2 
+        #rew["rl_1"] = rew_rl_1 + rew_rl_1 * (1-team_1) * 2 + rew_rl_0 * team_1 * 2
+        
+        # nur flexibel
+        #rew["rl_0"] = rew_rl_0 * (1-team_0) + rew_rl_1 * team_0 
+        #rew["rl_1"] = rew_rl_1 * (1-team_1) + rew_rl_0 * team_1
+        
+        # fix und kleiner Anteil vom flexiblen (besser mit 2-fach Testen?)
+        #rew["rl_0"] = rew_rl_0 + rew_rl_1 * team_0 * 2
+        #rew["rl_1"] = rew_rl_1 + rew_rl_0 * team_1 * 2
+        
+        rew["rl_0"] = rew_rl_0
+        rew["rl_1"] = rew_rl_1 - 2 * rew_rl_0 
+       
 
         # reward 2: first wins 
         #rew = {}
