@@ -200,7 +200,7 @@ class MultiAgentIntersectionEnv(MultiEnv):
             self.k.simulation.simulation_step()
             
             # save screenshots
-            save_screenshots = True
+            save_screenshots = False
             if save_screenshots:	
                 if not os.path.exists("./screenshots"):
                     os.mkdir("./screenshots")
@@ -1069,14 +1069,14 @@ class MultiAgentIntersectionEnv_baseline_3(MultiEnv):
             
             if pos_0 < pos_1:
                 if rl_ids[0] == "rl_0":
-                     baseline_3_accel = [2,3]
+                     baseline_3_accel = [1.5,3]
                 else:
-                      baseline_3_accel = [3,2]
+                      baseline_3_accel = [3,1.5]
             else:
                 if rl_ids[0] == "rl_0":
-                     baseline_3_accel = [3,2]
+                     baseline_3_accel = [3,1.5]
                 else:
-                      baseline_3_accel = [2,3]
+                      baseline_3_accel = [1.5,3]
             self.k.vehicle.apply_acceleration(rl_ids, baseline_3_accel)
 
     def compute_reward(self, rl_actions, **kwargs):
