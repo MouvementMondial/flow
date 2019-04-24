@@ -15,10 +15,12 @@ from flow.scenarios.merge import MergeScenario
 from flow.scenarios.loop_merge import TwoLoopsOneMergingScenario
 from flow.scenarios.multi_loop import MultiLoopScenario
 from flow.scenarios.intersection import IntersectionTWScenario
+from flow.scenarios.tenaciousD import TenaciousDScenario
 
 __all__ = [
     "Scenario", "BayBridgeScenario", "BayBridgeTollScenario",
     "BottleneckScenario", "Figure8Scenario", "SimpleGridScenario",
     "HighwayScenario", "LoopScenario", "MergeScenario",
-    "TwoLoopsOneMergingScenario", "MultiLoopScenario", "IntersectionScenarioTW"
+    "TwoLoopsOneMergingScenario", "MultiLoopScenario", "IntersectionScenarioTW",
+    "TenaciousDScenario"
 ]

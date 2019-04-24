@@ -87,3 +87,16 @@ class BayBridgeRouter(ContinuousRouter):
             new_route = super().choose_route(env)
 
         return new_route
+
+class TenaciousDRouter(BaseRouter):
+    
+    def choose_route(self, env):
+        edge = env.k.vehicle.get_edge(self.veh_id)
+        if edge != "dia":
+            if env.k.vehicle.get_edge(self.veh_id) == \
+                        env.k.vehicle.get_route(self.veh_id)[-1]:
+                    return env.available_routes[env.k.vehicle.get_edge(self.veh_id)]
+            else:
+                return None
+        else:
+            return None
