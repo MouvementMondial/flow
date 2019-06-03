@@ -4,6 +4,7 @@ from flow.envs.base_env import Env
 from gym.spaces.box import Box
 from flow.core import rewards
 import numpy as np
+import os
 
 ADDITIONAL_ENV_PARAMS = {
     # maximum acceleration for autonomous vehicles, in m/s^2
@@ -170,7 +171,13 @@ class IntersectionEnv(Env):
 
             nrOfVeh_t = len(self.k.vehicle.get_ids())
             self.k.simulation.simulation_step()
-            #self.traci_connection.gui.screenshot("View #0",str(self.step_counter)+".png")
+            
+            # save screenshots
+            save_screenshots = True
+            if save_screenshots:	
+                if not os.path.exists("./screenshots"):
+                    os.mkdir("./screenshots")
+                self.k.kernel_api.gui.screenshot("View #0","./screenshots/"+str(self.step_counter)+".png")
 
             self.k.vehicle.update(reset=False)
 
@@ -197,6 +204,12 @@ class IntersectionEnv(Env):
                 print("crash collision")
                 break
 
+            # update the colors of vehicles
+            if self.sim_params.render:
+                #self.k.vehicle.update_vehicle_colors()
+                self.k.vehicle.set_color('rl_0',(0,0,255))
+                self.k.vehicle.set_color('rl_1',(255,0,0))
+            
             # render a frame
             self.render()
 

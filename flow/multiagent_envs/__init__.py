@@ -1,7 +1,7 @@
 from flow.multiagent_envs.multiagent_env import MultiEnv
 from flow.multiagent_envs.loop.wave_attenuation import \
     MultiWaveAttenuationPOEnv
-from flow.multiagent_envs.loop.wave_attenuation import MultiWaveAttenuationPOEnv_dipl
+
 from flow.multiagent_envs.loop.loop_accel import MultiAgentAccelEnv
 from flow.multiagent_envs.multiagent_intersection_env import MultiAgentIntersectionEnv
 from flow.multiagent_envs.multiagent_intersection_env import MultiAgentTeamSpiritIntersectionEnv
@@ -9,7 +9,11 @@ from flow.multiagent_envs.multiagent_intersection_env import MultiAgentIntersect
 from flow.multiagent_envs.multiagent_intersection_env import MultiAgentIntersectionEnv_baseline_2
 from flow.multiagent_envs.multiagent_intersection_env import MultiAgentIntersectionEnv_baseline_3
 from flow.multiagent_envs.multiagent_intersection_env import MultiAgentIntersectionEnv_sharedPolicy_TeamSpirit
+from flow.multiagent_envs.multiagent_intersection_env import MultiAgentIntersectionEnv_sharedPolicy_2veh
+from flow.multiagent_envs.multiagent_intersection_env import MultiAgentIntersectionEnv_sharedPolicy_4veh
+from flow.multiagent_envs.multiagent_intersection_env import MultiAgentIntersectionEnv_sharedPolicy_4veh_constTeamspirit
+from flow.multiagent_envs.multiagent_tenaciousD_env import MultiTenaciousDEnv
 
 __all__ = ['MultiEnv', 'MultiAgentAccelEnv', 'MultiWaveAttenuationPOEnv', 'MultiAgentIntersectionEnv', 'MultiAgentTeamSpiritIntersectionEnv','MultiAgentIntersectionEnv_baseline_1',
 'MultiAgentIntersectionEnv_baseline_2','MultiAgentIntersectionEnv_baseline_3',
-'MultiAgentIntersectionEnv_sharedPolicy_TeamSpirit','MultiWaveAttenuationPOEnv_dipl']
+'MultiAgentIntersectionEnv_sharedPolicy_TeamSpirit','MultiTenaciousDEnv','MultiAgentIntersectionEnv_sharedPolicy_2veh','MultiAgentIntersectionEnv_sharedPolicy_4veh','MultiAgentIntersectionEnv_sharedPolicy_4veh_constTeamspirit']

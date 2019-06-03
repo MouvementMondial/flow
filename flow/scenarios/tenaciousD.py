@@ -5,6 +5,7 @@ from flow.core.params import InitialConfig
 from flow.core.params import TrafficLightParams
 from numpy import pi, sin, cos, linspace
 import numpy as np
+import random
 
 ADDITIONAL_NET_PARAMS = {
     # length of the ring road
@@ -247,20 +248,61 @@ class TenaciousDScenario(Scenario):
 
         return rts
 
+    #def specify_edge_starts(self):
+    #    """See parent class."""
+    #    length = 230
+    #    edgelen = self.length / 4
+    #    s = 8
+    #    r = length / (2 * pi)
+    #    l = 8
+    #    edgestarts = [("dia", 0),
+    #                  ("right_upper_E", 2*r+s),             ("left_upper_E",  2*r+l),
+    #                  ("right_upper",   2*r+s+10),          ("left_upper",    2*r+l+10),
+    #                  ("right_lower",   2*r+s+10+edgelen),  ("left_lower",    2*r+l+10+edgelen),
+    #                  ("right_lower_E", 2*r+s+10+edgelen*2), ("left_lower_E",  2*r+l+10+edgelen*2)]
+    #
+    #    return edgestarts
+
     def specify_edge_starts(self):
         """See parent class."""
         length = 230
         edgelen = self.length / 4
-        s = 8
+        s = 6
         r = length / (2 * pi)
-        l = 8
-        edgestarts = [("dia", 0),
-                      ("right_upper_E", 2*r+s),             ("left_upper_E",  2*r+l),
-                      ("right_upper",   2*r+s+10),          ("left_upper",    2*r+l+10),
-                      ("right_lower",   2*r+s+10+edgelen),  ("left_lower",    2*r+l+10+edgelen),
-                      ("right_lower_E", 2*r+s+10+edgelen*2), ("left_lower_E",  2*r+l+10+edgelen*2)]
+        l = 6
+        edgestarts = [("dia", edgelen+10+s),
+                      ("right_upper_E", edgelen+10+s+2*r+s),   ("left_upper_E",  edgelen+10+s+2*r+s+0.01),
+                      ("right_upper",   edgelen+10+s+2*r+s+10),("left_upper",    edgelen+10+s+2*r+s+10+0.01),
+                      ("right_lower",   0),                    ("left_lower",    0.01),
+                      ("right_lower_E", edgelen),              ("left_lower_E",  edgelen+0.01)]
 
         return edgestarts
+
+    #def specify_intersection_edge_starts(self):
+    #    length = 230
+    #    edgelen = self.length / 4
+    #    s = 8
+    #    r = length / (2 * pi)
+    #    l = 8
+    #    intersection_edgestarts = \
+    #        [(":bottom_1",2*r+s+10+edgelen*2+10),
+    #        (":bottom_0",2*r+s+10+edgelen*2+10.01),
+    #        (":top_1",2*r),
+    #        (":top_0",2*r+0.01)]
+    #    return intersection_edgestarts
+
+    def specify_intersection_edge_starts(self):
+        length = 230
+        edgelen = self.length / 4
+        s = 6
+        r = length / (2 * pi)
+        l = 6
+        intersection_edgestarts = \
+            [(":bottom_1",10+s+edgelen),
+            (":bottom_0",10+s+edgelen+0.01),
+            (":top_1",10+s+edgelen+2*r),
+            (":top_0",10+s+edgelen+2*r+0.01)]
+        return intersection_edgestarts
 
     def gen_custom_start_pos(self, initial_config, num_vehicles, **kwargs):
         startpositions = []
@@ -270,15 +312,16 @@ class TenaciousDScenario(Scenario):
 
         nr_left  = num_vehicles // 2 + num_vehicles % 2
         nr_right = num_vehicles // 2
-        pos_left  = np.linspace(0,edgelen,num=nr_left)
-        pos_right = np.linspace(0,edgelen,num=nr_right)
+        pos_left  = np.linspace(5,edgelen-5,num=nr_left)
+        pos_right = np.linspace(5,edgelen-5,num=nr_right)
 
         for pos in np.nditer(pos_left):
-            startpositions.append(("left_upper",pos))
+            startpositions.append(("left_lower",pos+random.uniform(-15,15)))
             startlanes.append(0)
         for pos in np.nditer(pos_right):
-            startpositions.append(("right_upper",pos))
+            startpositions.append(("right_lower",pos+random.uniform(-15,15)))
             startlanes.append(0)
+        print(startpositions)
         return startpositions, startlanes
 
 

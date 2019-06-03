@@ -264,6 +264,13 @@ def visualizer_rllib(args):
             else:
                 ret += reward
             
+            if multiagent and done['__all__']:
+                break
+            if not multiagent and done:
+                break            
+
+            print(state)
+
             # append log values
             action_acc_1.append(action['rl_0'][0])
             action_acc_2.append(action['rl_1'][0])
@@ -272,12 +279,7 @@ def visualizer_rllib(args):
             veh_pos_1.append(vehicles.get_x_by_id(veh_name_1))
             veh_pos_2.append(vehicles.get_x_by_id(veh_name_2))
             curr_reward_1.append(reward['rl_0'])
-            curr_reward_2.append(reward['rl_1'])
-
-            if multiagent and done['__all__']:
-                break
-            if not multiagent and done:
-                break
+            curr_reward_2.append(reward['rl_1'])  
 
         if multiagent:
             #for key in rets.keys():
